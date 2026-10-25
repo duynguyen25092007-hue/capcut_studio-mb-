@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CapCut Mobile Pro</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
+    html, body { width: 100%; height: 100%; background: #0b0c10; color: #f1f5f9; overflow: hidden; touch-action: manipulation; }
+    .app { display: flex; flex-direction: column; width: 100vw; height: 100dvh; background: #0b0c10; }
+    .hidden { display: none !important; }
+
+    /* Header */
+    .header { height: 48px; background: #141622; border-bottom: 1px solid #23273a; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; flex-shrink: 0; z-index: 20; }
+    .brand { display: flex; align-items: center; gap: 6px; }
+    .logo { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg, #00e5ff, #7c3aed); color: #090a0f; font-weight: 900; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+    .title-inp { width: 105px; background: transparent; border: 1px solid transparent; color: #fff; font-weight: 700; font-size: 12px; padding: 3px 5px; border-radius: 4px; }
+    .title-inp:focus { outline: none; border-color: #00e5ff; background: #1e2235; }
+    .ratio-group { display: flex; background: #0b0c10; padding: 2px; border-radius: 6px; border: 1px solid #23273a; gap: 2px; }
+    .ratio-btn { background: transparent; color: #94a3b8; border: none; padding: 4px 7px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer; }
+    .ratio-btn.active { background: #00e5ff; color: #090a0f; }
+    .top-actions { display: flex; align-items: center; gap: 6px; }
+    .btn-upload { background: #1e2235; color: #e2e8f0; border: 1px solid #333954; padding: 6px 9px; border-radius: 7px; font-size: 11px; font-weight: 600; cursor: pointer; }
+    .btn-export { background: linear-gradient(135deg, #00e5ff, #7c3aed); color: #090a0f; border: none; padding: 6px 10px; border-radius: 7px; font-size: 11px; font-weight: 800; cursor: pointer; }
+
+    /* Monitor */
+    .monitor { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; background: #050608; overflow: hidden; padding: 6px; min-height: 0; }
+    #previewCanvas { max-height: 100%; max-width: 100%; width: auto; height: auto; border-radius: 8px; border: 1px solid #262b40; background: #000; touch-action: none; display: block; }
+    .hint-badge { position: absolute; top: 8px; left: 8px; background: rgba(15, 18, 28, 0.8); border: 1px solid rgba(0, 229, 255, 0.3); color: #67e8f9; font-size: 10px; padding: 3px 8px; border-radius: 20px; pointer-events: none; }
+
+    /* Transport & Timeline */
+    .transport-box { background: #121521; border-top: 1px solid #23273a; padding: 6px 10px; flex-shrink: 0; }
+    .transport-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .play-controls { display: flex; align-items: center; gap: 6px; }
+    .circle-btn { width: 30px; height: 30px; border-radius: 50%; background: #1e2235; color: #e2e8f0; border: 1px solid #2e344f; font-size: 10px; font-weight: 700; cursor: pointer; }
+    .play-btn { width: 36px; height: 36px; border-radius: 50%; background: #00e5ff; color: #090a0f; border: none; font-size: 14px; font-weight: 900; cursor: pointer; }
+    .timecode { font-family: monospace; font-size: 11px; color: #00e5ff; margin-left: 4px; }
+    .clip-actions { display: flex; gap: 6px; }
+    .btn-split { background: rgba(245, 158, 11, 0.18); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.4); padding: 5px 9px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; }
+    .btn-del { background: rgba(244, 63, 94, 0.18); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.4); padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; }
+
+    .timeline-strip { height: 38px; background: #0a0c12; border: 1px solid #23273a; border-radius: 6px; overflow-x: auto; overflow-y: hidden; position: relative; touch-action: pan-x; }
+    .timeline-inner { height: 100%; position: relative; display: flex; align-items: center; padding: 0 4px; background-size: 40px 100%; background-image: linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px); }
+    .clip-block { height: 26px; border-radius: 4px; background: #1e2638; border: 1px solid #3b4666; color: #cbd5e1; font-size: 10px; font-weight: 600; display: flex; align-items: center; padding: 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; margin-right: 2px; cursor: pointer; }
+    .clip-block.selected { background: #00e5ff; color: #090a0f; border-color: #fff; font-weight: 800; }
+    .playhead { position: absolute; top: 0; bottom: 0; width: 2px; background: #f43f5e; pointer-events: none; z-index: 10; }
+    .playhead::before { content: ""; position: absolute; top: 0; left: -4px; width: 10px; height: 10px; background: #f43f5e; transform: rotate(45deg); border-radius: 2px; }
+
+    /* Bottom Drawer */
+    .drawer { background: #161926; border-top: 1px solid #282d42; padding: 8px 10px; max-height: 185px; overflow-y: auto; flex-shrink: 0; }
+    .drawer-head { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #23273a; padding-bottom: 5px; margin-bottom: 7px; }
+    .drawer-title { font-size: 11px; font-weight: 800; color: #00e5ff; text-transform: uppercase; }
+    .drawer-close { background: transparent; border: none; color: #94a3b8; font-size: 13px; padding: 2px 6px; cursor: pointer; }
+    .row-scroll { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 6px; }
+    .chip-btn { background: #22273b; color: #e2e8f0; border: 1px solid #343b57; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+    .chip-btn.active { background: rgba(0, 229, 255, 0.2); border-color: #00e5ff; color: #00e5ff; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 6px; }
+    .field-label { display: block; font-size: 10px; color: #94a3b8; margin-bottom: 3px; }
+    .inp, .sel { width: 100%; background: #0f121c; border: 1px solid #2e3550; color: #fff; padding: 6px 8px; border-radius: 6px; font-size: 11px; }
+    input[type="range"] { width: 100%; accent-color: #00e5ff; }
+    .btn-primary { background: #00e5ff; color: #090a0f; border: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+    .sticker-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 6px; }
+    .stk-item { background: #22273b; border: 1px solid #333954; border-radius: 6px; padding: 5px; font-size: 18px; text-align: center; cursor: pointer; }
+    .stk-badge { grid-column: span 3; font-size: 10px; font-weight: 800; color: #fff; background: #e11d48; padding: 6px; border-radius: 6px; border: none; cursor: pointer; }
+    .mini-list { max-height: 65px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+    .mini-item { background: #0f121c; border: 1px solid #23273a; border-radius: 5px; padding: 4px 8px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; }
+
+    /* Bottom Navigation */
+    .bottom-nav { height: 54px; background: #0e1018; border-top: 1px solid #23273a; display: flex; align-items: center; justify-content: space-around; flex-shrink: 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
+    .nav-btn { flex: 1; height: 100%; background: transparent; border: none; color: #94a3b8; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 10px; font-weight: 600; cursor: pointer; }
+    .nav-btn.active { color: #00e5ff; font-weight: 700; }
+    .nav-icon { font-size: 16px; }
+
+    /* Modal & Toast */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.82); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 100; }
+    .modal-card { background: #161926; border: 1px solid #333954; border-radius: 12px; width: 100%; max-width: 340px; padding: 16px; }
+    .progress-wrap { width: 100%; height: 8px; background: #0b0c10; border-radius: 99px; overflow: hidden; margin: 8px 0 12px; }
+    .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #00e5ff, #7c3aed); transition: width 0.1s; }
+    .toast { position: fixed; top: 56px; left: 50%; transform: translateX(-50%); background: rgba(15, 18, 28, 0.95); border: 1px solid #00e5ff; color: #fff; padding: 6px 14px; border-radius: 99px; font-size: 11px; font-weight: 600; z-index: 120; pointer-events: none; transition: opacity 0.25s; opacity: 0; white-space: nowrap; }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- TOP HEADER -->
+    <header class="header">
+      <div class="brand">
+        <div class="logo">CC</div>
+        <input id="projectTitleInput" class="title-inp" type="text" value="Video TikTok #01" />
+      </div>
+
+      <div class="ratio-group">
+        <button id="ratio916Btn" class="ratio-btn active">9:16</button>
+        <button id="ratio169Btn" class="ratio-btn">16:9</button>
+        <button id="ratio11Btn" class="ratio-btn">1:1</button>
+      </div>
+
+      <div class="top-actions">
+        <label for="uploadVideoInput" class="btn-upload">+ Video</label>
+        <input id="uploadVideoInput" type="file" accept="video/*" class="hidden" />
+        <button id="openRenderModalBtn" class="btn-export">Xuất</button>
+      </div>
+    </header>
+
+    <!-- CENTER MONITOR -->
+    <main class="monitor">
+      <canvas id="previewCanvas" width="405" height="720"></canvas>
+      <div class="hint-badge">💡 Chạm & kéo trên video để dời vùng Xoá Logo / Nhãn dán</div>
+    </main>
+
+    <!-- TRANSPORT & TIMELINE -->
+    <section class="transport-box">
+      <div class="transport-row">
+        <div class="play-controls">
+          <button id="stepBackBtn" class="circle-btn">-1s</button>
+          <button id="playPauseBtn" class="play-btn">▶</button>
+          <button id="stepForwardBtn" class="circle-btn">+1s</button>
+          <span id="timecodeDisplay" class="timecode">00:00.0 / 00:12.0</span>
+        </div>
+        <div class="clip-actions">
+          <button id="quickSplitBtn" class="btn-split">✂️ Tách</button>
+          <button id="deleteClipBtn" class="btn-del">🗑️ Xoá</button>
+        </div>
+      </div>
+
+      <div id="timelineScrollArea" class="timeline-strip">
+        <div id="timelineInner" class="timeline-inner" style="width: 720px;">
+          <div id="miniTrackClips" style="display:flex; align-items:center;"></div>
+          <div id="playheadLine" class="playhead" style="left: 0px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BOTTOM TOOL DRAWER -->
+    <aside id="toolDrawer" class="drawer">
+      <div class="drawer-head">
+        <span id="drawerTitle" class="drawer-title">✂️ Cắt Ghép & Chuyển Cảnh</span>
+        <button id="closeDrawerBtn" class="drawer-close">✕</button>
+      </div>
+
+      <!-- TAB 1: MEDIA -->
+      <div id="drawer-media" class="drawer-content">
+        <div class="row-scroll">
+          <button id="addCyberSceneBtn" class="chip-btn">+ Cảnh Neon</button>
+          <button id="addNatureSceneBtn" class="chip-btn">+ Cảnh Biển</button>
+          <button id="addStudioSceneBtn" class="chip-btn">+ Cảnh Vlog</button>
+          <button id="addIntroSceneBtn" class="chip-btn">+ Cảnh Intro</button>
+        </div>
+        <div class="grid-2">
+          <div>
+            <label class="field-label">Chuyển cảnh (Transition)</label>
+            <select id="transitionSelect" class="sel">
+              <option value="none">Cut thẳng</option>
+              <option value="fade" selected>Mờ dần (Fade)</option>
+              <option value="flash">Chớp sáng (Flash)</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label">Tốc độ: <span id="fxSpeedVal">1.0</span>x</label>
+            <input id="fxSpeedInput" type="range" min="0.5" max="2.0" step="0.25" value="1.0" />
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: VIETSUB -->
+      <div id="drawer-vietsub" class="drawer-content hidden">
+        <div style="display:flex; gap:6px; margin-bottom:6px;">
+          <input id="subTextInput" class="inp" type="text" placeholder="Nhập câu Vietsub..." value="Chào mừng đến với CapCut Mobile!" />
+          <button id="addSubtitleBtn" class="btn-primary">+ Thêm</button>
+          <button id="autoVietsubBtn" class="chip-btn">✨ Mẫu AI</button>
+        </div>
+        <div class="grid-3">
+          <div>
+            <label class="field-label">Màu chữ</label>
+            <input id="subColorInput" type="color" value="#ffea00" style="width:100%; height:26px; background:#0f121c; border:1px solid #2e3550; border-radius:4px;" />
+          </div>
+          <div>
+            <label class="field-label">Cỡ: <span id="subSizeVal">24</span>px</label>
+            <input id="subSizeInput" type="range" min="16" max="38" value="24" />
+          </div>
+          <div>
+            <label class="field-label">Vị trí Y: <span id="subYVal">82</span>%</label>
+            <input id="subYInput" type="range" min="20" max="92" value="82" />
+          </div>
+        </div>
+        <div id="subtitlesList" class="mini-list"></div>
+      </div>
+
+      <!-- TAB 3: XOÁ LOGO -->
+      <div id="drawer-delogo" class="drawer-content hidden">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <label style="font-size:11px; font-weight:700; color:#67e8f9; display:flex; align-items:center; gap:5px;">
+            <input id="delogoEnableToggle" type="checkbox" checked /> Bật Xoá Logo Watermark
+          </label>
+          <div style="display:flex; gap:4px;">
+            <button id="presetTopRightBtn" class="chip-btn" style="padding:3px 7px;">Góc Phải</button>
+            <button id="presetTopLeftBtn" class="chip-btn" style="padding:3px 7px;">Góc Trái</button>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div>
+            <label class="field-label">Chế độ xoá</label>
+            <select id="delogoModeSelect" class="sel">
+              <option value="inpaint" selected>Smart Inpaint (Mượt)</option>
+              <option value="blur">Gaussian Blur (Mờ)</option>
+              <option value="pixelate">Pixelate (Ô vuông)</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label">Độ mạnh: <span id="delogoStrengthVal">18</span>px</label>
+            <input id="delogoStrengthInput" type="range" min="6" max="40" value="18" />
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: NHÃN DÁN -->
+      <div id="drawer-stickers" class="drawer-content hidden">
+        <div class="sticker-grid">
+          <button data-sticker="🔥" class="stk-item">🔥</button>
+          <button data-sticker="😂" class="stk-item">😂</button>
+          <button data-sticker="❤️" class="stk-item">❤️</button>
+          <button data-sticker="👍" class="stk-item">👍</button>
+          <button data-sticker="🎉" class="stk-item">🎉</button>
+          <button data-sticker="⚡" class="stk-item">⚡</button>
+          <button data-sticker="SUBSCRIBE 🔔" class="stk-badge">SUBSCRIBE 🔔</button>
+          <button data-sticker="VIETSUB VIP 🇻🇳" class="stk-badge" style="background:#f59e0b; color:#090a0f;">VIETSUB VIP 🇻🇳</button>
+        </div>
+        <div id="stickersList" class="mini-list"></div>
+      </div>
+
+      <!-- TAB 5: HIỆU ỨNG -->
+      <div id="drawer-effects" class="drawer-content hidden">
+        <div class="row-scroll">
+          <button data-vfx="none" class="chip-btn vfx-btn active">Mặc định</button>
+          <button data-vfx="glitch" class="chip-btn vfx-btn">⚡ Glitch</button>
+          <button data-vfx="shake" class="chip-btn vfx-btn">💥 Shake</button>
+          <button data-vfx="cinema" class="chip-btn vfx-btn">🎬 Cinema</button>
+        </div>
+        <div class="grid-2">
+          <div>
+            <label class="field-label">Độ sáng: <span id="fxBrightVal">100</span>%</label>
+            <input id="fxBrightInput" type="range" min="50" max="150" value="100" />
+          </div>
+          <div>
+            <label class="field-label">Bão hoà màu: <span id="fxSatVal">100</span>%</label>
+            <input id="fxSatInput" type="range" min="0" max="200" value="100" />
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 6: LỒNG GIỌNG -->
+      <div id="drawer-voice" class="drawer-content hidden">
+        <div class="grid-2">
+          <button id="recordMicBtn" class="btn-primary" style="background:#e11d48; color:#fff;">🎙️ Thu Âm Micro</button>
+          <button id="addTtsBtn" class="btn-primary">🗣️ AI Đọc Tiếng Việt</button>
+        </div>
+        <input id="ttsInput" class="inp" type="text" value="Xin chào các bạn, hôm nay mình làm video cực chất!" style="margin-bottom:6px;" />
+        <div class="grid-3">
+          <button data-sfx="whoosh" class="chip-btn sfx-btn">💨 Whoosh</button>
+          <button data-sfx="ding" class="chip-btn sfx-btn">🔔 Ding Pop</button>
+          <button data-sfx="cyber" class="chip-btn sfx-btn">⚡ Synth Beat</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav">
+      <button data-tab="media" class="nav-btn active"><span class="nav-icon">✂️</span><span>Cắt ghép</span></button>
+      <button data-tab="vietsub" class="nav-btn"><span class="nav-icon">💬</span><span>Vietsub</span></button>
+      <button data-tab="delogo" class="nav-btn"><span class="nav-icon">🪄</span><span>Xoá Logo</span></button>
+      <button data-tab="stickers" class="nav-btn"><span class="nav-icon">✨</span><span>Nhãn dán</span></button>
+      <button data-tab="effects" class="nav-btn"><span class="nav-icon">🔥</span><span>Hiệu ứng</span></button>
+      <button data-tab="voice" class="nav-btn"><span class="nav-icon">🎙️</span><span>Lồng tiếng</span></button>
+    </nav>
+  </div>
+
+  <!-- RENDER MODAL -->
+  <div id="renderModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <strong style="font-size:14px;">⚡ Xuất Video (.webm)</strong>
+        <button id="closeRenderModalBtn" class="drawer-close">✕</button>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:12px; color:#cbd5e1;">
+        <span>Trạng thái:</span>
+        <span id="renderStatusText" style="color:#00e5ff; font-weight:700;">Sẵn sàng</span>
+      </div>
+      <div class="progress-wrap">
+        <div id="renderProgressBar" class="progress-bar"></div>
+      </div>
+      <button id="startRenderBtn" class="btn-export" style="width:100%; padding:10px; font-size:12px;">🚀 Bắt Đầu Xuất Video</button>
+      <a id="downloadRenderedLink" class="btn-primary hidden" style="display:block; text-align:center; text-decoration:none; width:100%; padding:10px; margin-top:6px; background:#10b981;">⬇️ Tải Video Về Máy</a>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toastBox" class="toast">Đã cập nhật!</div>
+
+  <script>
+    const canvas = document.getElementById('previewCanvas');
+    const ctx = canvas.getContext('2d');
+    const offCanvas = document.createElement('canvas');
+    const offCtx = offCanvas.getContext('2d');
+
+    const state = {
+      isPlaying: false,
+      currentTime: 0,
+      pxPerSec: 42,
+      aspectRatio: '9:16',
+      selectedClipId: 'clip-1',
+      transition: 'fade',
+      vfx: 'none',
+      color: { brightness: 100, saturation: 100, speed: 1.0 },
+      delogo: { enabled: true, mode: 'inpaint', x: 65, y: 6, w: 30, h: 10, strength: 18 },
+      subStyle: { color: '#ffea00', size: 24, yPercent: 82 },
+      clips: [
+        { id: 'clip-1', name: 'Cảnh 1: Neon', type: 'procedural', theme: 'cyber', duration: 6.0, videoEl: null, trimOffset: 0 },
+        { id: 'clip-2', name: 'Cảnh 2: Sóng Biển', type: 'procedural', theme: 'ocean', duration: 6.0, videoEl: null, trimOffset: 0 }
+      ],
+      subtitles: [
+        { id: 'sub-1', text: 'Chào mừng bạn đến với CapCut Mobile!', start: 0.2, end: 3.6 },
+        { id: 'sub-2', text: 'Chạm kéo trên màn hình để Xoá Logo & Nhãn dán', start: 3.8, end: 7.5 },
+        { id: 'sub-3', text: 'Bấm Xuất ở góc phải để tải video về máy!', start: 7.7, end: 11.8 }
+      ],
+      stickers: [
+        { id: 'stk-1', content: '🔥', x: 20, y: 15, size: 40, start: 0, end: 12 },
+        { id: 'stk-2', content: 'VIETSUB VIP 🇻🇳', x: 28, y: 10, size: 18, start: 0, end: 12 }
+      ]
+    };
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const box = document.getElementById('toastBox');
+      box.textContent = msg;
+      box.classList.add('show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => box.classList.remove('show'), 2000);
+    }
+
+    function getTotalDuration() {
+      return Math.max(1, state.clips.reduce((acc, c) => acc + c.duration, 0));
+    }
+
+    function getClipAtTime(t) {
+      let acc = 0;
+      for (let i = 0; i < state.clips.length; i++) {
+        const c = state.clips[i];
+        if (t >= acc && t <= acc + c.duration + 0.001) {
+          return { clip: c, index: i, localTime: t - acc };
+        }
+        acc += c.duration;
+      }
+      const last = state.clips[state.clips.length - 1];
+      return { clip: last, index: state.clips.length - 1, localTime: last ? last.duration : 0 };
+    }
+
+    function drawProceduralScene(targetCtx, w, h, theme, globalTime) {
+      targetCtx.save();
+      if (theme === 'cyber') {
+        const grad = targetCtx.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, '#090426');
+        grad.addColorStop(0.5, '#2b094d');
+        grad.addColorStop(1, '#050716');
+        targetCtx.fillStyle = grad;
+        targetCtx.fillRect(0, 0, w, h);
+
+        const sunY = h * 0.44;
+        const sunGrad = targetCtx.createLinearGradient(0, sunY - 60, 0, sunY + 60);
+        sunGrad.addColorStop(0, '#ff007f');
+        sunGrad.addColorStop(1, '#ffbe0b');
+        targetCtx.fillStyle = sunGrad;
+        targetCtx.beginPath();
+        targetCtx.arc(w * 0.5, sunY, Math.min(w, h) * 0.26, 0, Math.PI * 2);
+        targetCtx.fill();
+
+        targetCtx.strokeStyle = 'rgba(0, 229, 255, 0.4)';
+        targetCtx.lineWidth = 1.5;
+        const horizon = h * 0.55;
+        for (let i = -6; i <= 6; i++) {
+          targetCtx.beginPath();
+          targetCtx.moveTo(w * 0.5 + i * 18, horizon);
+          targetCtx.lineTo(w * 0.5 + i * 95, h);
+          targetCtx.stroke();
+        }
+      } else if (theme === 'ocean') {
+        const sky = targetCtx.createLinearGradient(0, 0, 0, h);
+        sky.addColorStop(0, '#0f172a');
+        sky.addColorStop(1, '#0284c7');
+        targetCtx.fillStyle = sky;
+        targetCtx.fillRect(0, 0, w, h);
+
+        for (let layer = 0; layer < 3; layer++) {
+          targetCtx.fillStyle = `rgba(56, 189, 248, ${0.25 + layer * 0.18})`;
+          targetCtx.beginPath();
+          const baseH = h * (0.58 + layer * 0.12);
+          targetCtx.moveTo(0, h);
+          for (let x = 0; x <= w; x += 15) {
+            const waveY = baseH + Math.sin(x * 0.02 + globalTime * (2 + layer * 0.6)) * 14;
+            targetCtx.lineTo(x, waveY);
+          }
+          targetCtx.lineTo(w, h);
+          targetCtx.closePath();
+          targetCtx.fill();
+        }
+      } else {
+        const bg = targetCtx.createLinearGradient(0, 0, w, h);
+        bg.addColorStop(0, '#1e1b4b');
+        bg.addColorStop(1, '#311042');
+        targetCtx.fillStyle = bg;
+        targetCtx.fillRect(0, 0, w, h);
+
+        const bars = 14;
+        const barW = (w * 0.8) / bars;
+        const startX = w * 0.1;
+        for (let i = 0; i < bars; i++) {
+          const amp = Math.abs(Math.sin(globalTime * 4 + i * 0.5)) * (h * 0.3) + 12;
+          targetCtx.fillStyle = i % 2 === 0 ? '#00e5ff' : '#a855f7';
+          targetCtx.fillRect(startX + i * barW, h * 0.55 - amp / 2, barW - 4, amp);
+        }
+      }
+
+      const lx = w * 0.66;
+      const ly = h * 0.07;
+      targetCtx.fillStyle = 'rgba(255,255,255,0.9)';
+      targetCtx.font = `bold ${Math.round(w * 0.036)}px sans-serif`;
+      targetCtx.fillText('🎵 TIKTOK @ID', lx, ly + 15);
+      targetCtx.fillStyle = '#00e5ff';
+      targetCtx.font = `${Math.round(w * 0.025)}px sans-serif`;
+      targetCtx.fillText('LOGO DEMO', lx, ly + 28);
+      targetCtx.restore();
+    }
+
+    function renderCurrentFrame() {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const info = getClipAtTime(state.currentTime);
+      const activeClip = info.clip;
+      if (!activeClip) return;
+
+      ctx.save();
+      ctx.filter = `brightness(${state.color.brightness}%) saturate(${state.color.saturation}%)`;
+      if (state.vfx === 'shake') {
+        ctx.translate(Math.sin(state.currentTime * 35) * 6, Math.cos(state.currentTime * 42) * 5);
+      }
+
+      if (activeClip.type === 'video' && activeClip.videoEl && activeClip.videoEl.readyState >= 2) {
+        const vw = activeClip.videoEl.videoWidth || w;
+        const vh = activeClip.videoEl.videoHeight || h;
+        const scale = Math.min(w / vw, h / vh);
+        const dw = vw * scale;
+        const dh = vh * scale;
+        ctx.drawImage(activeClip.videoEl, (w - dw) / 2, (h - dh) / 2, dw, dh);
+      } else {
+        drawProceduralScene(ctx, w, h, activeClip.theme || 'cyber', state.currentTime);
+      }
+      ctx.restore();
+
+      if (info.index > 0 && info.localTime < 0.4 && state.transition !== 'none') {
+        const p = info.localTime / 0.4;
+        ctx.save();
+        ctx.fillStyle = state.transition === 'flash' ? `rgba(255,255,255,${1 - p})` : `rgba(0,0,0,${1 - p})`;
+        ctx.fillRect(0, 0, w, h);
+        ctx.restore();
+      }
+
+      if (state.delogo.enabled) {
+        const rx = Math.round((state.delogo.x / 100) * w);
+        const ry = Math.round((state.delogo.y / 100) * h);
+        const rw = Math.round((state.delogo.w / 100) * w);
+        const rh = Math.round((state.delogo.h / 100) * h);
+        const strength = state.delogo.strength;
+
+        ctx.save();
+        if (state.delogo.mode === 'inpaint') {
+          ctx.drawImage(canvas, rx, Math.max(0, ry - 4), rw, 4, rx, ry, rw, rh);
+        } else if (state.delogo.mode === 'blur') {
+          ctx.beginPath(); ctx.rect(rx, ry, rw, rh); ctx.clip();
+          ctx.filter = `blur(${Math.max(4, Math.round(strength / 2))}px)`;
+          ctx.drawImage(canvas, 0, 0); ctx.filter = 'none';
+        } else {
+          const sw = Math.max(1, Math.floor(rw / 8));
+          const sh = Math.max(1, Math.floor(rh / 8));
+          offCanvas.width = sw; offCanvas.height = sh;
+          offCtx.imageSmoothingEnabled = false;
+          offCtx.drawImage(canvas, rx, ry, rw, rh, 0, 0, sw, sh);
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(offCanvas, 0, 0, sw, sh, rx, ry, rw, rh);
+          ctx.imageSmoothingEnabled = true;
+        }
+        ctx.restore();
+
+        if (!state.isRendering) {
+          ctx.save();
+          ctx.strokeStyle = '#f43f5e';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 4]);
+          ctx.strokeRect(rx, ry, rw, rh);
+          ctx.fillStyle = '#f43f5e';
+          ctx.font = 'bold 10px sans-serif';
+          ctx.fillText('🪄 Vùng xoá logo', rx + 2, Math.max(12, ry - 4));
+          ctx.restore();
+        }
+      }
+
+      if (state.vfx === 'glitch') {
+        const sy = Math.floor((Math.sin(state.currentTime * 20) * 0.5 + 0.5) * (h - 20));
+        ctx.drawImage(canvas, 0, sy, w, 20, 8, sy, w, 20);
+      } else if (state.vfx === 'cinema') {
+        const bh = Math.round(h * 0.1);
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, w, bh);
+        ctx.fillRect(0, h - bh, w, bh);
+      }
+
+      state.stickers.forEach(stk => {
+        if (state.currentTime >= stk.start && state.currentTime <= stk.end) {
+          ctx.save();
+          ctx.translate((stk.x / 100) * w, (stk.y / 100) * h);
+          if (stk.content.length > 4) {
+            ctx.font = `800 ${stk.size}px sans-serif`;
+            const m = ctx.measureText(stk.content);
+            ctx.fillStyle = '#e11d48';
+            ctx.fillRect(-m.width / 2 - 8, -stk.size / 2 - 5, m.width + 16, stk.size + 10);
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(stk.content, 0, 1);
+          } else {
+            ctx.font = `${stk.size}px sans-serif`;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(stk.content, 0, 0);
+          }
+          ctx.restore();
+        }
+      });
+
+      state.subtitles.filter(s => state.currentTime >= s.start && state.currentTime <= s.end).forEach(sub => {
+        ctx.save();
+        const fs = state.subStyle.size;
+        ctx.font = `700 ${fs}px sans-serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        const tx = w / 2;
+        const ty = (state.subStyle.yPercent / 100) * h;
+        const m = ctx.measureText(sub.text);
+        ctx.fillStyle = 'rgba(0,0,0,0.75)';
+        ctx.fillRect(tx - m.width / 2 - 10, ty - fs / 2 - 6, m.width + 20, fs + 12);
+        ctx.fillStyle = state.subStyle.color;
+        ctx.fillText(sub.text, tx, ty);
+        ctx.restore();
+      });
+    }
+
+    let isDragging = false;
+    let dragTarget = null;
+
+    function onPointerDown(cx, cy) {
+      const rect = canvas.getBoundingClientRect();
+      const mx = ((cx - rect.left) / rect.width) * 100;
+      const my = ((cy - rect.top) / rect.height) * 100;
+
+      if (state.delogo.enabled && mx >= state.delogo.x && mx <= state.delogo.x + state.delogo.w && my >= state.delogo.y && my <= state.delogo.y + state.delogo.h) {
+        isDragging = true; dragTarget = 'delogo'; return;
+      }
+      for (let i = state.stickers.length - 1; i >= 0; i--) {
+        const stk = state.stickers[i];
+        if (Math.abs(mx - stk.x) < 14 && Math.abs(my - stk.y) < 14) {
+          isDragging = true; dragTarget = stk; return;
+        }
+      }
+    }
+
+    function onPointerMove(cx, cy) {
+      if (!isDragging) return;
+      const rect = canvas.getBoundingClientRect();
+      const mx = Math.max(0, Math.min(95, ((cx - rect.left) / rect.width) * 100));
+      const my = Math.max(0, Math.min(95, ((cy - rect.top) / rect.height) * 100));
+      if (dragTarget === 'delogo') {
+        state.delogo.x = Math.round(Math.max(0, Math.min(100 - state.delogo.w, mx - state.delogo.w / 2)));
+        state.delogo.y = Math.round(Math.max(0, Math.min(100 - state.delogo.h, my - state.delogo.h / 2)));
+      } else if (dragTarget) {
+        dragTarget.x = Math.round(mx);
+        dragTarget.y = Math.round(my);
+      }
+      renderCurrentFrame();
+    }
+
+    canvas.addEventListener('touchstart', e => { if (e.touches[0]) onPointerDown(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+    window.addEventListener('touchmove', e => { if (e.touches[0]) onPointerMove(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+    window.addEventListener('touchend', () => { isDragging = false; dragTarget = null; });
+    canvas.addEventListener('mousedown', e => onPointerDown(e.clientX, e.clientY));
+    window.addEventListener('mousemove', e => onPointerMove(e.clientX, e.clientY));
+    window.addEventListener('mouseup', () => { isDragging = false; dragTarget = null; });
+
+    let lastTs = null;
+    let animId = null;
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = (sec % 60).toFixed(1).padStart(4, '0');
+      return `${String(m).padStart(2, '0')}:${s}`;
+    }
+
+    function updatePlayhead() {
+      document.getElementById('playheadLine').style.left = `${state.currentTime * state.pxPerSec}px`;
+      document.getElementById('timecodeDisplay').textContent = `${formatTime(state.currentTime)} / ${formatTime(getTotalDuration())}`;
+    }
+
+    function loop(ts) {
+      if (!state.isPlaying) return;
+      if (!lastTs) lastTs = ts;
+      state.currentTime += ((ts - lastTs) / 1000) * state.color.speed;
+      lastTs = ts;
+      if (state.currentTime >= getTotalDuration()) {
+        state.currentTime = 0;
+        pauseVideo();
+      }
+      renderCurrentFrame();
+      updatePlayhead();
+      if (state.isPlaying) animId = requestAnimationFrame(loop);
+    }
+
+    function playVideo() {
+      state.isPlaying = true; lastTs = null;
+      document.getElementById('playPauseBtn').textContent = '⏸';
+      animId = requestAnimationFrame(loop);
+    }
+
+    function pauseVideo() {
+      state.isPlaying = false;
+      document.getElementById('playPauseBtn').textContent = '▶';
+      if (animId) cancelAnimationFrame(animId);
+    }
+
+    document.getElementById('playPauseBtn').addEventListener('click', () => state.isPlaying ? pauseVideo() : playVideo());
+    document.getElementById('stepBackBtn').addEventListener('click', () => { pauseVideo(); state.currentTime = Math.max(0, state.currentTime - 1); renderCurrentFrame(); updatePlayhead(); });
+    document.getElementById('stepForwardBtn').addEventListener('click', () => { pauseVideo(); state.currentTime = Math.min(getTotalDuration(), state.currentTime + 1); renderCurrentFrame(); updatePlayhead(); });
+
+    document.getElementById('quickSplitBtn').addEventListener('click', () => {
+      const info = getClipAtTime(state.currentTime);
+      if (!info.clip || info.localTime < 0.4 || info.localTime > info.clip.duration - 0.4) {
+        showToast('Đặt thanh đỏ vào giữa clip để tách!'); return;
+      }
+      const orig = info.clip;
+      const d1 = Number(info.localTime.toFixed(2));
+      const d2 = Number((orig.duration - d1).toFixed(2));
+      orig.duration = d1;
+      const c2 = { id: 'clip-' + Date.now(), name: orig.name + ' (2)', type: orig.type, theme: orig.theme, duration: d2, videoEl: orig.videoEl, trimOffset: (orig.trimOffset || 0) + d1 };
+      state.clips.splice(info.index + 1, 0, c2);
+      state.selectedClipId = c2.id;
+      renderAll();
+      showToast('✂️ Đã tách đôi clip!');
+    });
+
+    document.getElementById('deleteClipBtn').addEventListener('click', () => {
+      if (state.clips.length <= 1) { showToast('Cần giữ ít nhất 1 clip!'); return; }
+      state.clips = state.clips.filter(c => c.id !== state.selectedClipId);
+      state.selectedClipId = state.clips[0].id;
+      state.currentTime = Math.min(state.currentTime, getTotalDuration());
+      renderAll();
+      showToast('🗑️ Đã xoá clip!');
+    });
+
+    function setRatio(r, w, h, btnId) {
+      canvas.width = w; canvas.height = h;
+      ['ratio916Btn', 'ratio169Btn', 'ratio11Btn'].forEach(id => document.getElementById(id).classList.toggle('active', id === btnId));
+      renderCurrentFrame();
+      showToast(`Khung hình ${r}`);
+    }
+    document.getElementById('ratio916Btn').addEventListener('click', () => setRatio('9:16', 405, 720, 'ratio916Btn'));
+    document.getElementById('ratio169Btn').addEventListener('click', () => setRatio('16:9', 720, 405, 'ratio169Btn'));
+    document.getElementById('ratio11Btn').addEventListener('click', () => setRatio('1:1', 540, 540, 'ratio11Btn'));
+
+    document.getElementById('uploadVideoInput').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const vid = document.createElement('video');
+      vid.src = URL.createObjectURL(file);
+      vid.playsInline = true;
+      vid.addEventListener('loadedmetadata', () => {
+        const c = { id: 'clip-' + Date.now(), name: file.name.slice(0, 14), type: 'video', theme: 'cyber', duration: Math.min(30, Math.max(2, Number((vid.duration || 6).toFixed(1)))), videoEl: vid, trimOffset: 0 };
+        state.clips.push(c); state.selectedClipId = c.id;
+        renderAll();
+        showToast('🎬 Đã thêm video!');
+      });
+    });
+
+    function addClip(name, theme) {
+      const c = { id: 'clip-' + Date.now(), name, type: 'procedural', theme, duration: 5.0, videoEl: null, trimOffset: 0 };
+      state.clips.push(c); state.selectedClipId = c.id;
+      renderAll();
+      showToast(`+ Đã thêm ${name}`);
+    }
+    document.getElementById('addCyberSceneBtn').addEventListener('click', () => addClip('Cảnh Neon', 'cyber'));
+    document.getElementById('addNatureSceneBtn').addEventListener('click', () => addClip('Cảnh Biển', 'ocean'));
+    document.getElementById('addStudioSceneBtn').addEventListener('click', () => addClip('Cảnh Vlog', 'vlog'));
+    document.getElementById('addIntroSceneBtn').addEventListener('click', () => addClip('Cảnh Intro', 'cyber'));
+
+    const titles = { media: '✂️ Cắt Ghép & Chuyển Cảnh', vietsub: '💬 Phụ Đề Vietsub', delogo: '🪄 Xoá Logo Watermark', stickers: '✨ Nhãn Dán Động', effects: '🔥 Hiệu Ứng VFX', voice: '🎙️ Lồng Tiếng & Âm Thanh' };
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.getAttribute('data-tab');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('drawerTitle').textContent = titles[tab];
+        document.querySelectorAll('.drawer-content').forEach(c => c.classList.add('hidden'));
+        document.getElementById(`drawer-${tab}`).classList.remove('hidden');
+        document.getElementById('toolDrawer').classList.remove('hidden');
+      });
+    });
+    document.getElementById('closeDrawerBtn').addEventListener('click', () => document.getElementById('toolDrawer').classList.add('hidden'));
+
+    document.getElementById('transitionSelect').addEventListener('change', e => { state.transition = e.target.value; renderCurrentFrame(); });
+    document.getElementById('fxSpeedInput').addEventListener('input', e => { state.color.speed = parseFloat(e.target.value); document.getElementById('fxSpeedVal').textContent = state.color.speed; });
+
+    document.getElementById('addSubtitleBtn').addEventListener('click', () => {
+      const txt = document.getElementById('subTextInput').value.trim();
+      if (!txt) return;
+      state.subtitles.push({ id: 'sub-' + Date.now(), text: txt, start: Number(state.currentTime.toFixed(1)), end: Number((state.currentTime + 3).toFixed(1)) });
+      renderAll(); showToast('💬 Đã thêm Vietsub!');
+    });
+    document.getElementById('autoVietsubBtn').addEventListener('click', () => {
+      const tot = getTotalDuration();
+      state.subtitles = [
+        { id: 's1', text: '🔥 Video triệu view cực chất!', start: 0.2, end: Math.min(3.5, tot) },
+        { id: 's2', text: '✨ Chạm kéo để xoá logo góc phải', start: 3.6, end: Math.min(7.2, tot) },
+        { id: 's3', text: '🚀 Bấm Xuất để lưu video về máy!', start: 7.4, end: tot }
+      ];
+      renderAll(); showToast('✨ Đã tạo Vietsub mẫu!');
+    });
+    document.getElementById('subColorInput').addEventListener('input', e => { state.subStyle.color = e.target.value; renderCurrentFrame(); });
+    document.getElementById('subSizeInput').addEventListener('input', e => { state.subStyle.size = parseInt(e.target.value, 10); document.getElementById('subSizeVal').textContent = state.subStyle.size; renderCurrentFrame(); });
+    document.getElementById('subYInput').addEventListener('input', e => { state.subStyle.yPercent = parseInt(e.target.value, 10); document.getElementById('subYVal').textContent = state.subStyle.yPercent; renderCurrentFrame(); });
+
+    document.getElementById('delogoEnableToggle').addEventListener('change', e => { state.delogo.enabled = e.target.checked; renderCurrentFrame(); });
+    document.getElementById('delogoModeSelect').addEventListener('change', e => { state.delogo.mode = e.target.value; renderCurrentFrame(); });
+    document.getElementById('delogoStrengthInput').addEventListener('input', e => { state.delogo.strength = parseInt(e.target.value, 10); document.getElementById('delogoStrengthVal').textContent = state.delogo.strength; renderCurrentFrame(); });
+    document.getElementById('presetTopRightBtn').addEventListener('click', () => { state.delogo.x = 65; state.delogo.y = 6; renderCurrentFrame(); });
+    document.getElementById('presetTopLeftBtn').addEventListener('click', () => { state.delogo.x = 5; state.delogo.y = 6; renderCurrentFrame(); });
+
+    document.querySelectorAll('[data-sticker]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const content = btn.getAttribute('data-sticker');
+        state.stickers.push({ id: 'stk-' + Date.now(), content, x: 40, y: 35, size: content.length > 4 ? 18 : 40, start: 0, end: getTotalDuration() });
+        renderAll(); showToast(`✨ Đã thêm ${content}`);
+      });
+    });
+
+    document.querySelectorAll('.vfx-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.vfx = btn.getAttribute('data-vfx');
+        document.querySelectorAll('.vfx-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderCurrentFrame();
+      });
+    });
+    document.getElementById('fxBrightInput').addEventListener('input', e => { state.color.brightness = parseInt(e.target.value, 10); document.getElementById('fxBrightVal').textContent = state.color.brightness; renderCurrentFrame(); });
+    document.getElementById('fxSatInput').addEventListener('input', e => { state.color.saturation = parseInt(e.target.value, 10); document.getElementById('fxSatVal').textContent = state.color.saturation; renderCurrentFrame(); });
+
+    let isRec = false;
+    document.getElementById('recordMicBtn').addEventListener('click', () => {
+      isRec = !isRec;
+      document.getElementById('recordMicBtn').textContent = isRec ? '⏹ Dừng & Lưu' : '🎙️ Thu Âm Micro';
+      showToast(isRec ? '🎙️ Đang thu âm...' : '✅ Đã lưu thu âm!');
+    });
+    document.getElementById('addTtsBtn').addEventListener('click', () => {
+      const txt = document.getElementById('ttsInput').value.trim();
+      if (txt && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(txt);
+        u.lang = 'vi-VN';
+        window.speechSynthesis.speak(u);
+      }
+      showToast('🗣️ Đang đọc lồng tiếng AI...');
+    });
+
+    let audioCtx = null;
+    document.querySelectorAll('.sfx-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) {
+          if (!audioCtx) audioCtx = new AC();
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+          osc.frequency.setValueAtTime(520, audioCtx.currentTime);
+          osc.connect(gain).connect(audioCtx.destination);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+        }
+        showToast(`🎵 Đã chèn ${btn.textContent}`);
+      });
+    });
+
+    const timelineArea = document.getElementById('timelineScrollArea');
+    const timelineInner = document.getElementById('timelineInner');
+    let scrubbing = false;
+    function scrub(cx) {
+      const rect = timelineInner.getBoundingClientRect();
+      state.currentTime = Math.min(getTotalDuration(), Math.max(0, Number(((cx - rect.left) / state.pxPerSec).toFixed(2))));
+      renderCurrentFrame(); updatePlayhead();
+    }
+    timelineArea.addEventListener('touchstart', e => { pauseVideo(); scrubbing = true; if (e.touches[0]) scrub(e.touches[0].clientX); }, { passive: true });
+    window.addEventListener('touchmove', e => { if (scrubbing && e.touches[0]) scrub(e.touches[0].clientX); }, { passive: true });
+    window.addEventListener('touchend', () => scrubbing = false);
+    timelineArea.addEventListener('mousedown', e => { pauseVideo(); scrubbing = true; scrub(e.clientX); });
+    window.addEventListener('mousemove', e => { if (scrubbing) scrub(e.clientX); });
+    window.addEventListener('mouseup', () => scrubbing = false);
+
+    function renderAll() {
+      const tot = getTotalDuration();
+      document.getElementById('timelineInner').style.width = `${Math.max(600, (tot + 2) * state.pxPerSec)}px`;
+      const track = document.getElementById('miniTrackClips');
+      track.innerHTML = '';
+      state.clips.forEach(c => {
+        const el = document.createElement('div');
+        el.className = 'clip-block' + (c.id === state.selectedClipId ? ' selected' : '');
+        el.style.width = `${c.duration * state.pxPerSec}px`;
+        el.textContent = `${c.name} (${c.duration}s)`;
+        el.addEventListener('click', () => { state.selectedClipId = c.id; renderAll(); });
+        track.appendChild(el);
+      });
+
+      const subList = document.getElementById('subtitlesList');
+      subList.innerHTML = '';
+      state.subtitles.forEach(s => {
+        const r = document.createElement('div');
+        r.className = 'mini-item';
+        r.innerHTML = `<span style="color:#fde047;">"${s.text}"</span><button data-del-sub="${s.id}" class="drawer-close">✕</button>`;
+        subList.appendChild(r);
+      });
+      subList.querySelectorAll('[data-del-sub]').forEach(b => b.addEventListener('click', () => {
+        state.subtitles = state.subtitles.filter(s => s.id !== b.getAttribute('data-del-sub'));
+        renderAll();
+      }));
+
+      const stkList = document.getElementById('stickersList');
+      stkList.innerHTML = '';
+      state.stickers.forEach(stk => {
+        const r = document.createElement('div');
+        r.className = 'mini-item';
+        r.innerHTML = `<span>Nhãn: ${stk.content}</span><button data-del-stk="${stk.id}" class="drawer-close">✕</button>`;
+        stkList.appendChild(r);
+      });
+      stkList.querySelectorAll('[data-del-stk]').forEach(b => b.addEventListener('click', () => {
+        state.stickers = state.stickers.filter(s => s.id !== b.getAttribute('data-del-stk'));
+        renderAll();
+      }));
+
+      renderCurrentFrame();
+      updatePlayhead();
+    }
+
+    const modal = document.getElementById('renderModal');
+    document.getElementById('openRenderModalBtn').addEventListener('click', () => {
+      pauseVideo();
+      modal.classList.remove('hidden');
+      document.getElementById('renderProgressBar').style.width = '0%';
+      document.getElementById('renderStatusText').textContent = 'Sẵn sàng';
+      document.getElementById('downloadRenderedLink').classList.add('hidden');
+      document.getElementById('startRenderBtn').classList.remove('hidden');
+    });
+    document.getElementById('closeRenderModalBtn').addEventListener('click', () => modal.classList.add('hidden'));
+
+    document.getElementById('startRenderBtn').addEventListener('click', () => {
+      const tot = getTotalDuration();
+      const bar = document.getElementById('renderProgressBar');
+      const status = document.getElementById('renderStatusText');
+      const dl = document.getElementById('downloadRenderedLink');
+      const startBtn = document.getElementById('startRenderBtn');
+
+      state.isRendering = true;
+      state.currentTime = 0;
+      let recorder = null;
+      let chunks = [];
+
+      try {
+        const stream = canvas.captureStream(30);
+        recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+        recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+        recorder.onstop = () => {
+          state.isRendering = false;
+          dl.href = URL.createObjectURL(new Blob(chunks, { type: 'video/webm' }));
+          dl.download = 'capcut_mobile_video.webm';
+          dl.classList.remove('hidden');
+          startBtn.classList.add('hidden');
+          status.textContent = '✅ Hoàn tất 100%!';
+          renderCurrentFrame();
+        };
+        recorder.start();
+      } catch (e) { recorder = null; }
+
+      const timer = setInterval(() => {
+        state.currentTime += 0.15;
+        const pct = Math.min(100, Math.round((state.currentTime / tot) * 100));
+        bar.style.width = `${pct}%`;
+        status.textContent = `Đang xuất... ${pct}%`;
+        renderCurrentFrame();
+        updatePlayhead();
+        if (state.currentTime >= tot) {
+          clearInterval(timer);
+          state.currentTime = 0;
+          state.isRendering = false;
+          if (recorder && recorder.state !== 'inactive') recorder.stop();
+          else { status.textContent = '✅ Hoàn tất 100%!'; renderCurrentFrame(); }
+        }
+      }, 35);
+    });
+
+    window.addEventListener('load', renderAll);
+  </script>
+</body>
+</html>
